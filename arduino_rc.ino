@@ -1,13 +1,14 @@
 #include <avr/interrupt.h>
+#include <Wire.h>
 
 #define PINB0MASK 0b00000001
 #define PINB1MASK 0b00000010
 #define PINB2MASK 0b00000100
 #define PINB3MASK 0b00001000
 
-int ch1, ch2, ch3, ch4 = 0;
-unsigned long ch1timer, ch2timer, ch3timer, ch4timer;
-byte lastPINBValue = 0;
+volatile int ch1, ch2, ch3, ch4 = 0;
+volatile unsigned long ch1timer, ch2timer, ch3timer, ch4timer;
+volatile byte lastPINBValue = 0;
 
 void setup() {
     cli();
@@ -18,6 +19,8 @@ void setup() {
     // PCINT[7:0] -> PB0-5 -> D8-13
     PCICR = 1;
     PCMSK0 = 0b00001111;
+    // set prescale of timer0 to 8 instead of 64
+    //TCCR0B = (TCCR0B & 0b11111000) | 0x02;
     sei();
     Serial.begin(9600);
 }
