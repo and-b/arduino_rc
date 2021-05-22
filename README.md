@@ -1,6 +1,6 @@
 This project is a simple implementation of a RC 4 channels receiver using Arduino Nano - atmega328p
 
-It uses the PCINT interrupt to check if a pin hans changed is level
+It uses the PCINT interrupt to check if a pin has changed its level
 
 The 4 channels must be connected to pins D4->D7 (PD4 -> PD7), which are on PORTD
 
