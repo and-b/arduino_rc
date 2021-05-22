@@ -1,26 +1,22 @@
 #include <avr/interrupt.h>
-#include <Wire.h>
 
-#define PINB0MASK 0b00000001
-#define PINB1MASK 0b00000010
-#define PINB2MASK 0b00000100
-#define PINB3MASK 0b00001000
+#define PIND4MASK 0b00010000
+#define PIND5MASK 0b00100000
+#define PIND6MASK 0b01000000
+#define PIND7MASK 0b10000000
 
 volatile int ch1, ch2, ch3, ch4 = 0;
 volatile unsigned long ch1timer, ch2timer, ch3timer, ch4timer;
-volatile byte lastPINBValue = 0;
+volatile byte lastPINDValue = 0;
 
 void setup() {
     cli();
-    // When the PCIE0 bit is set (one) and the I-bit in the Status Register (SREG) is set (one), pin change interrupt 0 is
-    // enabled. Any change on any enabled PCINT[7:0] pin will cause an interrupt. The corresponding interrupt of Pin
-    // Change Interrupt Request is executed from the PCI0 Interrupt Vector. PCINT[7:0] pins are enabled individually
-    // by the PCMSK0 Register.
-    // PCINT[7:0] -> PB0-5 -> D8-13
-    PCICR = 1;
-    PCMSK0 = 0b00001111;
-    // set prescale of timer0 to 8 instead of 64
-    //TCCR0B = (TCCR0B & 0b11111000) | 0x02;
+    // When the PCIE2 bit is set (one) and the I-bit in the Status Register (SREG) is set (one), pin change interrupt 2 is
+    // enabled. Any change on any enabled PCINT[23:16] pin will cause an interrupt. The corresponding interrupt of
+    // Pin Change Interrupt Request is executed from the PCI2 Interrupt Vector. PCINT[23:16] pins are enabled
+    // individually by the PCMSK2 Register.
+    PCICR |= (1<<PCIE2);
+    PCMSK2 = 0b11110000;
     sei();
     Serial.begin(9600);
 }
@@ -38,36 +34,36 @@ void loop() {
     delay(250);
 }
 
-ISR(PCINT0_vect) {
+ISR(PCINT2_vect) {
     unsigned long timer = micros();
     
-    if ((PINB ^ lastPINBValue) & PINB0MASK) { // pinB0 changed
-        if (PINB & PINB0MASK) { // PinB0 is now 1, reset counter
+    if ((PIND ^ lastPINDValue) & PIND4MASK) { // PinX changed
+        if (PIND & PIND4MASK) { // PinX is now 1, reset counter
             ch1timer = timer;
-        } else { // PinB0 is now 0, calculate PWM
+        } else { // PinX is now 0, calculate PWM
             ch1 = timer - ch1timer;
         }
     }
-    if ((PINB ^ lastPINBValue) & PINB1MASK) { 
-        if (PINB & PINB1MASK) {
+    if ((PIND ^ lastPINDValue) & PIND5MASK) { 
+        if (PIND & PIND5MASK) {
             ch2timer = timer;
         } else {
             ch2 = timer - ch2timer;
         }
     }
-    if ((PINB ^ lastPINBValue) & PINB2MASK) {
-        if (PINB & PINB2MASK) {
+    if ((PIND ^ lastPINDValue) & PIND6MASK) {
+        if (PIND & PIND6MASK) {
             ch3timer = timer;
         } else {
             ch3 = timer - ch3timer;
         }
     }
-    if ((PINB ^ lastPINBValue) & PINB3MASK) {
-        if (PINB & PINB3MASK) {
+    if ((PIND ^ lastPINDValue) & PIND7MASK) {
+        if (PIND & PIND7MASK) {
             ch4timer = timer;
         } else {
             ch4 = timer - ch4timer;
         }
     }
-    lastPINBValue = PINB;
+    lastPINDValue = PIND;
 }
